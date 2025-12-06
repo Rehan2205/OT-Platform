@@ -1,26 +1,81 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 
-function App() {
+import Login from "./pages/Login/Login";
+import Register from "./pages/Register/Register";
+import Dashboard from "./pages/Dashboard/Dashboard";
+import TestInstructions from "./pages/TestInstructions/TestInstructions";
+import TestRunner from "./pages/TestRunner/TestRunner";
+import Result from "./pages/Result";
+import CreateTest from "./pages/CreateTest/CreateTest";
+
+// Private Route Wrapper
+const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const token = localStorage.getItem("token");
+  return token ? <>{children}</> : <Navigate to="/login" />;
+};
+
+const App: React.FC = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Navigate to="/login" />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+
+        {/* PRIVATE ROUTES */}
+        <Route
+          path="/dashboard"
+          element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/create-test"
+          element={
+            <PrivateRoute>
+              <CreateTest />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/tests/:id/instructions"
+          element={
+            <PrivateRoute>
+              <TestInstructions />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/tests/:id/run"
+          element={
+            <PrivateRoute>
+              <TestRunner />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/results/:id"
+          element={
+            <PrivateRoute>
+              <Result />
+            </PrivateRoute>
+          }
+        />
+      </Routes>
+    </Router>
   );
-}
+};
 
 export default App;

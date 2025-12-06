@@ -1,0 +1,36 @@
+.create-test-container {
+  width: 400px;
+  margin: 50px auto;
+  padding: 20px;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.create-test-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.create-test-container input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.create-test-container button {
+  width: 100%;
+  padding: 10px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.create-test-container button:hover {
+  background: #0056b3;
+}
