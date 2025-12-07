@@ -1,0 +1,75 @@
+/* Container for the dashboard */
+.dashboard {
+  padding: 40px;
+  background-color: #f9f9f9;
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+}
+
+/* Page title */
+.dashboard h1 {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 30px;
+  color: #333;
+}
+
+/* Grid container for tests */
+.test-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+/* Individual test card */
+.test-card {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Test title */
+.test-card h2 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+  color: #222;
+}
+
+/* Test description */
+.test-card p {
+  color: #555;
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+/* Test info (duration / marks) */
+.test-info {
+  font-size: 0.9rem;
+  color: #777;
+  margin-bottom: 15px;
+}
+
+/* Start test button */
+.start-btn {
+  padding: 10px 15px;
+  background-color: #007bff;
+  color: #fff;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.start-btn:hover {
+  background-color: #0056b3;
+}
+
+/* Loading and empty states */
+.loading,
+.empty {
+  font-size: 1.2rem;
+  color: #555;
+}
