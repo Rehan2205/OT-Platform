@@ -6,6 +6,16 @@ font-family: "Inter", sans-serif;
 animation: fadeIn 0.4s ease-in-out;
 }
 
+.test-title-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #f8fafc;
+  font-size: 15px;
+  transition: border 0.2s;
+}
+
 .page-title {
 font-size: 32px;
 font-weight: 800;
@@ -263,6 +273,10 @@ font-weight: 800;
 font-size: 22px;
 margin-bottom: 16px;
 color: #0f172a;
+}
+
+.difficulty-small {
+  width: 110px;
 }
 
 .preview-question {
