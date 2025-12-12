@@ -1,0 +1,27 @@
+import { Request, Response } from "express";
+import Admin from "../models/Admin.model";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+
+export const loginAdmin = async (req: Request, res: Response) => {
+  const { email, password } = req.body;
+
+  try {
+    const admin = await Admin.findOne({ email });
+    if (!admin) return res.status(401).json({ error: "Invalid credentials" });
+
+    const isValid = await bcrypt.compare(password, admin.password);
+    if (!isValid) return res.status(401).json({ error: "Invalid credentials" });
+
+    const token = jwt.sign(
+      { id: admin._id, role: "admin" },
+      process.env.JWT_SECRET as string,
+      { expiresIn: "1d" }
+    );
+
+    res.json({ token, admin: { id: admin._id, name: admin.name, email: admin.email } });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
