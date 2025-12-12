@@ -1,16 +1,18 @@
-# Ignore everything by default
+# Ignore everything
 /*
 
-# Allow admin folder
+# Allow needed folders
 !/admin/
+!/backend/
+!/user/
 
-# Ignore node_modules, logs, and OS files
-node_modules/
+# Ignore node_modules inside allowed folders
+admin/node_modules/
+backend/node_modules/
+user/node_modules/
+
+# Misc ignores
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .DS_Store
-
-# Ignore other project folders
-/user/
-/backend/
