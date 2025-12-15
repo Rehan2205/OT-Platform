@@ -1,34 +1,42 @@
 export type Difficulty = "easy" | "medium" | "hard";
 
-export type MCQQuestion = {
+export type CodingLanguage = "javascript" | "python" | "java" | "c++";
+
+export type BaseQuestion = {
   id: string;
-  type: "mcq";
   text: string;
-  options: string[];
-  correctIndex: number | null;
   marks: number;
   difficulty: Difficulty;
 };
 
-export type CodingTestCase = { input: string; output: string; hidden?: boolean };
+// Coding question
+export type CodingTestCase = {
+  input: string;
+  output: string;
+};
 
-export type CodingQuestion = {
-  id: string;
+export type CodingQuestion = BaseQuestion & {
   type: "coding";
-  text: string;
+  language: CodingLanguage;
   starterCode?: string;
   testCases: CodingTestCase[];
-  marks: number;
-  difficulty: Difficulty;
 };
 
-export type DescriptiveQuestion = {
-  id: string;
+// MCQ question
+export type MCQQuestion = BaseQuestion & {
+  type: "mcq";
+  options: string[];
+  correctIndex: number | null;
+};
+
+// Descriptive question
+export type RubricItem = { criteria: string; marks: number };
+
+export type DescriptiveQuestion = BaseQuestion & {
   type: "descriptive";
-  text: string;
-  wordLimit?: number;
-  marks: number;
-  difficulty: Difficulty;
+  wordLimit?: number;      // Added this
+  rubric?: RubricItem[];
 };
 
+// Union type for any question
 export type Question = MCQQuestion | CodingQuestion | DescriptiveQuestion;

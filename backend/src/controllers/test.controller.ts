@@ -12,6 +12,11 @@ export const createTest = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
+    if (!duration || duration < 1) {
+      return res.status(400).json({ error: "Duration must be greater than 0" });
+    }
+
+
     const test = await Test.create({
       title,
       description,

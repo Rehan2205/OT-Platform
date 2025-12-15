@@ -1,73 +1,89 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { CodingQuestion, CodingTestCase, CodingLanguage } from "../../types";
 
-export type CodingTestCase = {
-  input: string;
-  output: string;
-  hidden?: boolean;
+type Props = {
+  base: Omit<CodingQuestion, "type" | "testCases">;
+  editing: CodingQuestion | null;
+  onSave: (q: CodingQuestion) => void;
 };
 
-type CodingFormProps = {
-  testCases: CodingTestCase[];
-  setTestCase: (idx: number, key: keyof CodingTestCase, val: any) => void;
-  addTestCase: () => void;
-  removeTestCase: (idx: number) => void;
-  errors?: Record<string, string>;
-  starterCode: string;
-  setStarterCode: (val: string) => void;
-};
+export default function CodingForm({ base, editing, onSave }: Props) {
+  const [testCases, setTestCases] = useState<CodingTestCase[]>([
+    { input: "", output: "" },
+  ]);
+  const [starterCode, setStarterCode] = useState("");
+  const [language, setLanguage] = useState<CodingLanguage>("c++");
 
-const CodingForm: React.FC<CodingFormProps> = ({
-  testCases,
-  setTestCase,
-  addTestCase,
-  removeTestCase,
-  errors,
-  starterCode,
-  setStarterCode,
-}) => {
+  useEffect(() => {
+    if (!editing) return;
+    setTestCases(editing.testCases.length ? editing.testCases : [{ input: "", output: "" }]);
+    setStarterCode(editing.starterCode || "");
+    setLanguage(editing.language || "cpp");
+  }, [editing]);
+
+  const updateTestCase = (index: number, field: "input" | "output", value: string) => {
+    const next = [...testCases];
+    next[index] = { ...next[index], [field]: value };
+    setTestCases(next);
+  };
+
   return (
-    <div>
-      <label>Starter Code (optional)</label>
+    <>
+      <label>Programming Language</label>
+      <select value={language} onChange={(e) => setLanguage(e.target.value as CodingLanguage)}>
+        <option value="cpp">C++</option>
+        <option value="java">Java</option>
+        <option value="python">Python</option>
+        <option value="javascript">JavaScript</option>
+      </select>
+
+      <label>Starter Code</label>
       <textarea
-        className="large-qtext"
+        className="code-editor"
+        placeholder="// Starter code here"
         value={starterCode}
         onChange={(e) => setStarterCode(e.target.value)}
-        placeholder="Enter starter code if any..."
       />
 
-      <h4>Test Cases</h4>
-      {errors?.testCases && <div className="error">{errors.testCases}</div>}
-
-      {testCases.map((tc, idx) => (
-        <div className="testcase-row" key={idx}>
+      <h4 className="section-title">Test Cases</h4>
+      {testCases.map((tc, i) => (
+        <div className="testcase-row" key={i}>
           <input
+            type="text"
             placeholder="Input"
             value={tc.input}
-            onChange={(e) => setTestCase(idx, "input", e.target.value)}
+            onChange={(e) => updateTestCase(i, "input", e.target.value)}
           />
           <input
-            placeholder="Output"
+            type="text"
+            placeholder="Expected Output"
             value={tc.output}
-            onChange={(e) => setTestCase(idx, "output", e.target.value)}
+            onChange={(e) => updateTestCase(i, "output", e.target.value)}
           />
-          <label className="hidden-label">
-            <input
-              type="checkbox"
-              checked={!!tc.hidden}
-              onChange={(e) => setTestCase(idx, "hidden", e.target.checked)}
-            />
-            hidden
-          </label>
-          <button type="button" className="small-btn" onClick={() => removeTestCase(idx)}>
-            ✖
+          <button className="small-btn" onClick={() => setTestCases(testCases.filter((_, idx) => idx !== i))}>
+            &times;
           </button>
         </div>
       ))}
-      <button type="button" className="add-btn" onClick={addTestCase}>
+
+      <button className="add-btn" onClick={() => setTestCases([...testCases, { input: "", output: "" }])}>
         + Add Test Case
       </button>
-    </div>
-  );
-};
 
-export default CodingForm;
+      <button
+        className="add-btn"
+        onClick={() =>
+          onSave({
+            ...base,
+            type: "coding",
+            language,
+            starterCode,
+            testCases,
+          })
+        }
+      >
+        Save Question
+      </button>
+    </>
+  );
+}

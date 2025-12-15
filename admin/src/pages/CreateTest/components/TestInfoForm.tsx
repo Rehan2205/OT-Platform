@@ -3,18 +3,28 @@ import React from "react";
 type Props = {
   title: string;
   setTitle: (v: string) => void;
+
   duration: number;
   setDuration: (v: number) => void;
+
   totalMarks: number;
   setTotalMarks: (v: number) => void;
+
   errors: Record<string, string>;
 };
 
-export default function TestInfoForm({ title, setTitle, duration, setDuration, totalMarks, setTotalMarks, errors }: Props) {
+export default function TestInfoForm({
+  title,
+  setTitle,
+  duration,
+  setDuration,
+  totalMarks,
+  setTotalMarks,
+  errors,
+}: Props) {
   return (
     <>
-      {errors.form && <div className="error">{errors.form}</div>}
-
+      {/* Title */}
       <label>Title</label>
       <input
         className="test-title-input"
@@ -24,23 +34,27 @@ export default function TestInfoForm({ title, setTitle, duration, setDuration, t
       />
       {errors.title && <div className="error">{errors.title}</div>}
 
+      <input type="number" value={totalMarks} disabled />
+
+      {/* Duration */}
       <label>Duration (minutes)</label>
       <input
         type="number"
+        min={1}
         value={duration}
-        onChange={(e) => setDuration(Number(e.target.value) || 0)}
+        onChange={(e) => {
+          const val = Number(e.target.value);
+          if (val > 0) setDuration(val);
+        }}
+        placeholder="e.g. 60"
       />
       {errors.duration && <div className="error">{errors.duration}</div>}
 
-      <label>Total Marks (optional)</label>
-      <input
-        type="number"
-        value={totalMarks}
-        onChange={(e) => setTotalMarks(Number(e.target.value) || 0)}
-      />
-      {errors.totalMarks && <div className="error">{errors.totalMarks}</div>}
+      {/* Total Marks */}
+      <label>Total Marks</label>
+      <input type="number" value={totalMarks} disabled />
 
-      <hr />
+      {errors.totalMarks && <div className="error">{errors.totalMarks}</div>}
     </>
   );
 }

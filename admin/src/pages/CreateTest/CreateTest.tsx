@@ -4,84 +4,119 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 import TestInfoForm from "./components/TestInfoForm";
-import QuestionForm from "./components/QuestionForm";
+import QuestionForm from "./components/QuestionForm/QuestionForm";
 import QuestionList from "./components/QuestionList";
 import TestPreviewModal from "./components/TestPreviewModal";
 
 import { Question } from "./types";
-import { validateFullTest } from "./utils";
+import { validateQuestion, validateFullTest } from "./utils";
+
 import "./CreateTest.css";
 
 const DRAFT_KEY = "testDraft";
 
 export default function CreateTest() {
-  const [title,setTitle] = useState("");
-  const [duration,setDuration] = useState(60);
-  const [totalMarks,setTotalMarks] = useState(0);
-  const [questions,setQuestions] = useState<Question[]>([]);
-  const [editingIndex,setEditingIndex] = useState<number | null>(null);
-  const [qType,setQType] = useState<"mcq"|"coding"|"descriptive">("mcq");
-  const [showPreview,setShowPreview] = useState(false);
-  const [saving,setSaving] = useState(false);
-  const [errors,setErrors] = useState<Record<string,string>>({});
+  const [title, setTitle] = useState("");
+  const [duration, setDuration] = useState(60);
+  const [totalMarks, setTotalMarks] = useState(0);
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [qType, setQType] = useState<"mcq" | "coding" | "descriptive">("mcq");
+  const [showPreview, setShowPreview] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [errors] = useState<Record<string, string>>({});
 
-  // Load draft
-  useEffect(()=>{
+  useEffect(() => {
     const raw = localStorage.getItem(DRAFT_KEY);
-    if(!raw) return;
-    try{
-      const draft = JSON.parse(raw);
-      setTitle(draft.title||"");
-      setDuration(draft.duration||60);
-      setTotalMarks(draft.totalMarks||0);
-      setQuestions(draft.questions||[]);
-    }catch{}
-  },[]);
+    if (!raw) return;
 
-  // Auto-save draft
-  useEffect(()=>{
-    localStorage.setItem(DRAFT_KEY, JSON.stringify({title,duration,totalMarks,questions}));
-  },[title,duration,totalMarks,questions]);
+    try {
+      const draft = JSON.parse(raw);
+      setTitle(draft.title || "");
+      setDuration(draft.duration || 60);
+      setTotalMarks(draft.totalMarks || 0);
+      setQuestions(draft.questions || []);
+    } catch {
+      console.warn("Failed to load draft");
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(
+      DRAFT_KEY,
+      JSON.stringify({ title, duration, totalMarks, questions })
+    );
+  }, [title, duration, totalMarks, questions]);
+
+  useEffect(() => {
+    const sum = questions.reduce((acc, q) => acc + q.marks, 0);
+    setTotalMarks(sum);
+  }, [questions]);
 
   const handleSaveQuestion = (q: Question) => {
-    if(editingIndex!==null){
+    const error = validateQuestion(q);
+    if (error) {
+      toast.error(error);
+      return;
+    }
+
+    if (editingIndex !== null) {
       const next = [...questions];
       next[editingIndex] = q;
       setQuestions(next);
       setEditingIndex(null);
-    } else setQuestions(s=>[...s,q]);
+    } else {
+      setQuestions((prev) => [...prev, q]);
+    }
   };
 
-  const handleEditQuestion = (i:number)=>setEditingIndex(i);
-  const handleDeleteQuestion = (i:number)=>{
-    if(!window.confirm("Delete this question?")) return;
-    setQuestions(questions.filter((_,idx)=>idx!==i));
+  const handleEditQuestion = (index: number) => {
+    setEditingIndex(index);
   };
 
-  const handleCreateTest = async ()=>{
-    const e = validateFullTest(title,duration,totalMarks,questions);
-    if(Object.keys(e).length>0){
-      Object.values(e).forEach(msg=>toast.error(msg));
+  const handleDeleteQuestion = (index: number) => {
+    if (!window.confirm("Delete this question?")) return;
+    setQuestions((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleCreateTest = async () => {
+    const validationErrors = validateFullTest(
+      title,
+      duration,
+      totalMarks,
+      questions
+    );
+
+    if (Object.keys(validationErrors).length > 0) {
+      Object.values(validationErrors).forEach((msg) => toast.error(msg));
       return;
     }
 
     const payload = {
-      title:title.trim(),
-      durationMinutes:duration,
-      totalMarks: totalMarks||questions.reduce((s,q)=>s+q.marks,0),
-      questions
+      title: title.trim(),
+      duration,
+      totalMarks,
+      questions,
     };
 
     setSaving(true);
-    try{
+    try {
       const token = localStorage.getItem("adminToken");
-      await axios.post("/tests", payload, { headers: token ? { Authorization:`Bearer ${token}`} : undefined});
+
+      await axios.post("/tests", payload, {
+        headers: token
+          ? { Authorization: `Bearer ${token}` }
+          : undefined,
+      });
+
       localStorage.removeItem(DRAFT_KEY);
       toast.success("Test created successfully!");
       window.location.reload();
-    }catch(err:any){
-      toast.error(err?.response?.data?.error || "Failed to create test");
-    }finally{
+    } catch (err: any) {
+      toast.error(
+        err?.response?.data?.error || "Failed to create test"
+      );
+    } finally {
       setSaving(false);
     }
   };
@@ -91,48 +126,86 @@ export default function CreateTest() {
       <h1 className="page-title">Create Test</h1>
 
       <div className="form-card">
+        {/* TEST INFO */}
+        <h3 className="section-title">Test Information</h3>
         <TestInfoForm
-          title={title} setTitle={setTitle}
-          duration={duration} setDuration={setDuration}
-          totalMarks={totalMarks} setTotalMarks={setTotalMarks}
+          title={title}
+          setTitle={setTitle}
+          duration={duration}
+          setDuration={setDuration}
+          totalMarks={totalMarks}
+          setTotalMarks={setTotalMarks}
           errors={errors}
         />
 
-        <QuestionForm qType={qType} setQType={setQType} editingQuestion={editingIndex!==null?questions[editingIndex]:null} onSave={handleSaveQuestion}/>
+        {/* ADD QUESTION */}
+        <h3 className="section-title">Add Question</h3>
+        <QuestionForm
+          qType={qType}
+          setQType={setQType}
+          editingQuestion={
+            editingIndex !== null ? questions[editingIndex] : null
+          }
+          onSave={handleSaveQuestion}
+        />
 
-        <button type="button" className="preview-btn" onClick={()=>setShowPreview(true)}>Preview Test</button>
+        {/* QUESTIONS LIST */}
+        <h3 className="section-title">Questions</h3>
+        <QuestionList
+          questions={questions}
+          setQuestions={setQuestions}
+          onEdit={handleEditQuestion}
+          onDelete={handleDeleteQuestion}
+        />
+      </div>
 
-        <QuestionList questions={questions} setQuestions={setQuestions} onEdit={handleEditQuestion} onDelete={handleDeleteQuestion}/>
+      {/* STICKY FOOTER */}
+      <div className="sticky-footer">
+        <button
+          className="preview-btn"
+          type="button"
+          onClick={() => setShowPreview(true)}
+        >
+          Preview Test
+        </button>
 
-        <div style={{marginTop:18, display:"flex", gap:12}}>
-          <button className="create-btn" onClick={handleCreateTest} disabled={saving}>
-            {saving?"Saving...":"Create Test"}
-          </button>
+        <button
+          className="create-btn"
+          onClick={handleCreateTest}
+          disabled={saving}
+        >
+          {saving ? "Saving..." : "Create Test"}
+        </button>
 
-          <button className="delete-btn" onClick={()=>{
-            if(window.confirm("Clear draft and reset?")){
+        <button
+          className="delete-btn"
+          onClick={() => {
+            if (window.confirm("Clear draft and reset?")) {
               localStorage.removeItem(DRAFT_KEY);
               window.location.reload();
             }
-          }}>Reset Builder</button>
-        </div>
+          }}
+        >
+          Reset Builder
+        </button>
       </div>
 
+      {/* PREVIEW MODAL */}
       {showPreview && (
         <TestPreviewModal
           title={title}
           duration={duration}
-          totalMarks={totalMarks||questions.reduce((s,q)=>s+q.marks,0)}
+          totalMarks={totalMarks}
           questions={questions}
-          onClose={()=>setShowPreview(false)}
-          onCreate={()=>{
+          onClose={() => setShowPreview(false)}
+          onCreate={() => {
             setShowPreview(false);
             handleCreateTest();
           }}
         />
       )}
 
-      <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover theme="colored"/>
+      <ToastContainer position="top-right" theme="colored" />
     </div>
   );
 }
